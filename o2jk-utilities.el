@@ -1,4 +1,4 @@
-;;; org2jekyll-utilities.el ---                      -*- lexical-binding: t; -*-
+;;; o2jk-utilities.el ---                      -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015-2017  Antoine R. Dumont
 
@@ -24,28 +24,28 @@
 
 ;;; Code:
 
-(defmacro org2jekyll-tests-with-temp-buffer (text body-test)
+(defmacro o2jk-tests-with-temp-buffer (text body-test)
   "A `org-mode' mode buffer helper test on buffer.
 TEXT is the content of the buffer.
 BODY-TEST is the assertion to test on the buffer.
 NB-LINES-FORWARD is the number of lines to get back to."
   `(with-temp-buffer
      (org-mode)
-     (org2jekyll-mode)
+     (o2jk-mode)
      (insert ,text)
      ,body-test))
 
-(defmacro org2jekyll-tests-with-temp-buffer-and-return-content (text body-test)
+(defmacro o2jk-tests-with-temp-buffer-and-return-content (text body-test)
   "A `org-mode' mode buffer helper test on buffer.
 TEXT is the content of the buffer.
 BODY-TEST is the assertion to test on the buffer.
 NB-LINES-FORWARD is the number of lines to get back to."
   `(with-temp-buffer
      (org-mode)
-     (org2jekyll-mode)
+     (o2jk-mode)
      (insert ,text)
      ,body-test
      (buffer-substring-no-properties (point-min) (point-max))))
 
-(provide 'org2jekyll-utilities)
-;;; org2jekyll-utilities.el ends here
+(provide 'o2jk-utilities)
+;;; o2jk-utilities.el ends here
