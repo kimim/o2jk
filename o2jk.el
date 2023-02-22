@@ -177,9 +177,9 @@ Its values are initialized according to the values defined in version <= 0.2.2."
   "Return an org metadata string with entries in HEADERS."
   (mapconcat #'o2jk--header-entry headers "\n"))
 
-(defun o2jk--draft-filename (draft-dir title)
+(defun o2jk--draft-filename (draft-dir filename)
   "Compute the draft's filename from the DRAFT-DIR and TITLE."
-  (concat draft-dir (o2jk--make-slug title) o2jk-jekyll-post-ext))
+  (concat draft-dir "/" (o2jk--make-slug filename) o2jk-jekyll-post-ext))
 
 (defun o2jk--read-title ()
   "Read the title."
@@ -309,7 +309,7 @@ The specified title will be used as the name of the file."
   "List the drafts folder."
   (interactive)
   (o2jk--list-dir
-   (o2jk-input-directory o2jk-jekyll-drafts-dir)))
+   o2jk-jekyll-drafts-dir))
 
 (defun o2jk-get-options-from-buffer ()
   "Return special lines at the beginning of current buffer."
@@ -415,9 +415,9 @@ If the current path contains the `'o2jk-jekyll-drafts-dir`', removes it."
          (replace-regexp-in-string "//" "/"))))
 
 (defconst o2jk-required-org-header-alist '((:title       . 'required)
-                                       (:categories  . 'required)
-                                       (:tags)
-                                       (:layout      . 'required))
+                                           (:categories  . 'required)
+                                           (:tags)
+                                           (:layout      . 'required))
   "Map of required org headers for jekyll to accept rendering.")
 
 (defun o2jk-check-metadata (org-metadata)
@@ -535,9 +535,20 @@ Publication skipped" error-messages)
   (let* ((project      (-> "layout"
                            (assoc-default org-metadata)  ;; layout is the blog-project
                            (assoc org-publish-project-alist)))
-         (temp-file (->> org-file
-                         (replace-regexp-in-string ".org$" ".txt"))))
-    (o2jk--publish-temp-file-then-cleanup org-file temp-file project)))
+         (published (->> org-file
+                         (string-replace o2jk-source-directory
+                                         o2jk-jekyll-directory)
+                         (string-replace (file-truename o2jk-source-directory)
+                                         (file-truename o2jk-jekyll-directory))
+                         (replace-regexp-in-string ".org$" ".html"))))
+    (org-publish-file org-file project)
+    (let ((yaml-headers (-> org-file
+                            o2jk-read-metadata
+                            o2jk--to-yaml-header)))
+      (with-temp-file published
+        (insert-file-contents published)
+        (goto-char (point-min))
+        (insert yaml-headers)))))
 
 (defun o2jk-publish-post (org-file)
   "Publish ORG-FILE as a post."
@@ -545,28 +556,27 @@ Publication skipped" error-messages)
    'o2jk--publish-post-org-file-with-metadata
    org-file))
 
-(defun o2jk-install-yaml-headers (original-file published-file)
-  "Read ORIGINAL-FILE metadata and install yaml header to PUBLISHED-FILE.
-Then delete the original-file which is intended as a temporary file.
-Only for org-mode file, for other files, it's a noop.
-This function is intended to be used as org-publish hook function."
-  (let ((original-file-ext (file-name-extension original-file))
-        (published-file-ext (file-name-extension published-file)))
-    ;; original-file is the temporary file generated which will be edited with
-    ;; jekyll's yaml headers
+;; (defun o2jk-install-yaml-headers (original-file published-file)
+;;   "Read ORIGINAL-FILE metadata and install yaml header to PUBLISHED-FILE.
+;; Then delete the original-file which is intended as a temporary file.
+;; Only for org-mode file, for other files, it's a noop.
+;; This function is intended to be used as org-publish hook function."
+;;   (let ((original-file-ext (file-name-extension original-file))
+;;         (published-file-ext (file-name-extension published-file)))
+;;     ;; original-file is the temporary file generated which will be edited with
+;;     ;; jekyll's yaml headers
 
-    ;; careful about extensions: "post" -> org ; page -> o2jk
-    ;; other stuff are considered neither, so it's a noop
-    (when (and (or (string= "txt" original-file-ext) (string= "o2jk" original-file-ext))
-               (string= "html" published-file-ext))
-      (let ((yaml-headers (-> original-file
-                              o2jk-read-metadata
-                              o2jk--to-yaml-header)))
-        (with-temp-file published-file
-          (insert-file-contents published-file)
-          (goto-char (point-min))
-          (insert yaml-headers)))))
-  )
+;;     ;; careful about extensions: "post" -> org ; page -> o2jk
+;;     ;; other stuff are considered neither, so it's a noop
+;;     (when (and (or (string= "txt" original-file-ext) (string= "o2jk" original-file-ext))
+;;                (string= "html" published-file-ext))
+;;       (let ((yaml-headers (-> original-file
+;;                               o2jk-read-metadata
+;;                               o2jk--to-yaml-header)))
+;;         (with-temp-file published-file
+;;           (insert-file-contents published-file)
+;;           (goto-char (point-min))
+;;           (insert yaml-headers))))))
 
 (defun o2jk--publish-page-org-file-with-metadata (org-metadata org-file)
   "Publish as page with ORG-METADATA the ORG-FILE."
@@ -719,15 +729,15 @@ Commands:
 (defvar o2jk-mode-on-hook nil "o2jk starting hook")
 (setq o2jk-mode-off-hook nil) ;; for dev
 ;; install o2jk hook in org-publish when activating o2jk-mode
-(add-hook 'o2jk-mode-on-hook
-          (lambda ()
-            (add-hook 'org-publish-after-publishing-hook 'o2jk-install-yaml-headers)))
+;; (add-hook 'o2jk-mode-on-hook
+;;           (lambda ()
+;;             (add-hook 'org-publish-after-publishing-hook 'o2jk-install-yaml-headers)))
 
 (defvar o2jk-mode-off-hook '() "o2jk stoping hook")
 (setq o2jk-mode-off-hook nil) ;; for dev
 ;; uninstall hook on org-publish
-(add-hook 'o2jk-mode-off-hook
-          (lambda () (remove-hook 'org-publish-after-publishing-hook 'o2jk-install-yaml-headers)))
+;; (add-hook 'o2jk-mode-off-hook
+;;           (lambda () (remove-hook 'org-publish-after-publishing-hook 'o2jk-install-yaml-headers)))
 
 ;; Extend org-mode hyperlinks policy with a "local" link so we can publish
 ;; internal links which are then browsable when published
