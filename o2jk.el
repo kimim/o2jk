@@ -191,11 +191,18 @@ Its values are initialized according to the values defined in version <= 0.2.2."
 
 (defun o2jk--read-tags ()
   "Read the tags."
-  (read-string "Tags (space separated values): "))
+  (let* ((history-tags (org-persist--read-elisp-file "~/.emacs.d/o2jk.tags.el"))
+         (new-tags (completing-read-multiple "Tags (, separated values): " history-tags))
+         (updated-tags (cl-union history-tags (mapcar #'list new-tags))))
+    (org-persist--write-elisp-file
+     "~/.emacs.d/o2jk.tags.el" updated-tags)
+    (mapconcat #'identity new-tags " ")))
 
 (defun o2jk--read-categories ()
   "Read the categories."
-  (read-string "Categories (space separated values): "))
+  (consult--read (--filter
+                  (not (string-prefix-p "." it))
+                  (directory-files o2jk-jekyll-directory))))
 
 (defun o2jk--read-filename ()
   "Read the file name."
