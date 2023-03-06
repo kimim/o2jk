@@ -225,7 +225,7 @@ will instead have its value omitted in the returned plist."
    ;; (unless (plist-get ignore-plist :date)
    ;;   (list :date (o2jk-now)))
    (unless (plist-get ignore-plist :layout)
-	 (list :layout (o2jk--input-read "Layout: " o2jk-jekyll-layouts)))
+	 (list :layout o2jk-jekyll-layout-post))
    (unless (plist-get ignore-plist :filename)
      (list :filename (o2jk--read-filename)))
    (unless (plist-get ignore-plist :title)
@@ -296,9 +296,9 @@ The specified title will be used as the name of the file."
 	 (add-to-file-tuples (o2jk--alist-to-tuples add-to-file-options)))
     (unless (file-exists-p draft-file)
       (with-temp-file draft-file
-        (insert (o2jk-default-headers-template add-to-file-tuples) "\n\n")
-        (insert "* ")))
-    (find-file draft-file)))
+        (insert (o2jk-default-headers-template add-to-file-tuples) "\n\n")))
+    (find-file draft-file)
+    (end-of-buffer)))
 
 (defun o2jk--list-dir (dir)
   "List the content of DIR."
