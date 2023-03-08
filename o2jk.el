@@ -7,7 +7,7 @@
 ;; Version: 0.2.7
 ;; Package-Requires: ((dash "2.18.0") (s "1.9.0"))
 ;; Keywords: org-mode jekyll blog publish
-;; URL: https://github.com/ardumont/o2jk
+;; URL: https://github.com/kimim/o2jk
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -46,7 +46,7 @@
 ;;
 ;; You can customize using M-x customize-group RET o2jk RET
 ;;
-;; More information on https://github.com/ardumont/o2jk
+;; More information on https://github.com/kimim/o2jk
 
 ;;; Code:
 
@@ -225,7 +225,7 @@ will instead have its value omitted in the returned plist."
    ;; (unless (plist-get ignore-plist :date)
    ;;   (list :date (o2jk-now)))
    (unless (plist-get ignore-plist :layout)
-	 (list :layout (o2jk--input-read "Layout: " o2jk-jekyll-layouts)))
+	 (list :layout o2jk-jekyll-layout-post))
    (unless (plist-get ignore-plist :filename)
      (list :filename (o2jk--read-filename)))
    (unless (plist-get ignore-plist :title)
@@ -238,7 +238,9 @@ will instead have its value omitted in the returned plist."
 	 (list :categories (o2jk--read-categories)))))
 
 (defun o2jk--get-template-entries (&optional decided-options-alist)
-  "Return the contents of o2jk-default-template-entries and o2jk-default-template-entries-extra replaced by entries is DECIDED-OPTIONS-ALIST."
+  "Return the contents of o2jk-default-template-entries and
+o2jk-default-template-entries-extra replaced by entries is
+DECIDED-OPTIONS-ALIST."
   (let ((-compare-fn #'string=)
 	(decided-options (-map #'car decided-options-alist)))
 (--map-when (and (not (cdr it)) (-contains? decided-options (car it)))
@@ -296,8 +298,7 @@ The specified title will be used as the name of the file."
 	 (add-to-file-tuples (o2jk--alist-to-tuples add-to-file-options)))
     (unless (file-exists-p draft-file)
       (with-temp-file draft-file
-        (insert (o2jk-default-headers-template add-to-file-tuples) "\n\n")
-        (insert "* ")))
+        (insert (o2jk-default-headers-template add-to-file-tuples) "\n\n")))
     (find-file draft-file)))
 
 (defun o2jk--list-dir (dir)
