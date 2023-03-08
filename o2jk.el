@@ -288,18 +288,19 @@ DECIDED-OPTIONS-ALIST."
 The specified title will be used as the name of the file."
   (interactive)
   (let* ((metadata (o2jk--init-buffer-metadata))
-	 (metadata-alist (o2jk--plist-to-alist metadata))
-     (category (plist-get metadata :categories))
-	 (filename (plist-get metadata :filename))
-     (draft-file  (o2jk--draft-filename
-                   o2jk-jekyll-drafts-dir
-                   filename))
-	 (add-to-file-options (o2jk--get-template-entries metadata-alist))
-	 (add-to-file-tuples (o2jk--alist-to-tuples add-to-file-options)))
+	     (metadata-alist (o2jk--plist-to-alist metadata))
+         (category (plist-get metadata :categories))
+	     (filename (plist-get metadata :filename))
+         (draft-file  (o2jk--draft-filename
+                       o2jk-jekyll-drafts-dir
+                       filename))
+	     (add-to-file-options (o2jk--get-template-entries metadata-alist))
+	     (add-to-file-tuples (o2jk--alist-to-tuples add-to-file-options)))
     (unless (file-exists-p draft-file)
       (with-temp-file draft-file
         (insert (o2jk-default-headers-template add-to-file-tuples) "\n\n")))
-    (find-file draft-file)))
+    (find-file draft-file)
+    (end-of-buffer)))
 
 (defun o2jk--list-dir (dir)
   "List the content of DIR."
