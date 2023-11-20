@@ -56,6 +56,7 @@
 (require 'dash)
 (require 's)
 (require 'ido)
+(require 'consult)
 
 (defconst o2jk--version "0.2.7" "Current o2jk version installed.")
 
