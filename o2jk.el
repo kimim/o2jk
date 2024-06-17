@@ -553,8 +553,8 @@ Publication skipped" error-messages)
          (published (->> org-file
                          (string-replace o2jk-source-directory
                                          o2jk-jekyll-directory)
-                         (string-replace (file-truename o2jk-source-directory)
-                                         (file-truename o2jk-jekyll-directory))
+                         (string-replace (expand-file-name o2jk-source-directory)
+                                         (expand-file-name o2jk-jekyll-directory))
                          (replace-regexp-in-string ".org$" ".html"))))
     (org-publish-file org-file project)
     (let ((yaml-headers (-> org-file
@@ -646,7 +646,7 @@ Layout `'default`' is a page (depending on the user customs)."
   (let* ((buffer (current-buffer))
          (org-file (buffer-file-name (current-buffer)))
          (filepath (file-name-directory org-file)))
-    (if (string-prefix-p (file-truename o2jk-source-directory)
+    (if (string-prefix-p (expand-file-name o2jk-source-directory)
                          filepath)
         (o2jk-publish-from-jekyll org-file)
       (let* ((filename (file-name-nondirectory org-file))
