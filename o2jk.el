@@ -320,6 +320,14 @@ The specified title will be used as the name of the file."
    (o2jk-output-directory o2jk-jekyll-posts-dir)))
 
 ;;;###autoload
+(defun o2jk-list-source ()
+  "Lists the posts source folder."
+  (interactive)
+  (o2jk--list-dir
+   o2jk-source-directory))
+
+
+;;;###autoload
 (defun o2jk-list-drafts ()
   "List the drafts folder."
   (interactive)
