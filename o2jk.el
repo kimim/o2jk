@@ -114,7 +114,8 @@
   :group 'o2jk)
 
 (defvar o2jk-default-template-entries
-  '(("layout")
+  '(("date")
+    ("layout")
     ("title")
     ("tags")
     ("categories"))
@@ -440,7 +441,8 @@ If the current path contains the `'o2jk-jekyll-drafts-dir`', removes it."
 (defconst o2jk-required-org-header-alist '((:title       . 'required)
                                            (:categories  . 'required)
                                            (:tags)
-                                           (:layout      . 'required))
+                                           (:layout      . 'required)
+                                           (:date        . 'required))
   "Map of required org headers for jekyll to accept rendering.")
 
 (defun o2jk-check-metadata (org-metadata)
@@ -513,7 +515,7 @@ Publication skipped" error-messages)
                        (o2jk--space-separated-values-to-yaml
                         (plist-get merged-metadata :tags))
                      ""))
-             (date (o2jk--convert-timestamp-to-yyyy-dd-mm-hh
+             (date (o2jk--convert-timestamp-to-yyyy-dd-mm
                     (plist-get merged-metadata :date)))
              (yaml-metadata (-> merged-metadata
                                 (plist-put :categories categories)
@@ -653,7 +655,17 @@ Layout `'default`' is a page (depending on the user customs)."
   (interactive)
   (let* ((buffer (current-buffer))
          (org-file (buffer-file-name (current-buffer)))
-         (filepath (file-name-directory org-file)))
+         (filepath (file-name-directory org-file))
+         (date-property (plist-get (o2jk-get-options-from-buffer) :date)))
+    ;; add date property if missing
+    (when (not date-property)
+      (let ((date-string (o2jk--convert-timestamp-to-yyyy-dd-mm
+                          (format-time-string "%Y-%m-%d %H:%M"))))
+        (save-excursion
+          (with-current-buffer buffer
+            (goto-char (point-min))
+            (insert (format "#+DATE: %s\n" date-string))
+            (save-buffer)))))
     (if (string-prefix-p (expand-file-name o2jk-source-directory)
                          filepath)
         (o2jk-publish-from-jekyll org-file)
