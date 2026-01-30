@@ -114,8 +114,7 @@
   :group 'o2jk)
 
 (defvar o2jk-default-template-entries
-  '(("date")
-    ("layout")
+  '(("layout")
     ("title")
     ("tags")
     ("categories"))
