@@ -663,6 +663,8 @@ Layout `'default`' is a page (depending on the user customs)."
         (save-excursion
           (with-current-buffer buffer
             (goto-char (point-min))
+            (when (re-search-forward "^#\\+LAYOUT:" nil t)
+              (beginning-of-line))
             (insert (format "#+DATE: %s\n" date-string))
             (save-buffer)))))
     (if (string-prefix-p (expand-file-name o2jk-source-directory)
