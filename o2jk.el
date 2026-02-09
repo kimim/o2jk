@@ -655,29 +655,33 @@ Layout `'default`' is a page (depending on the user customs)."
   (let* ((buffer (current-buffer))
          (org-file (buffer-file-name (current-buffer)))
          (filepath (file-name-directory org-file))
+         (layout-property (plist-get (o2jk-get-options-from-buffer) :layout))
          (date-property (plist-get (o2jk-get-options-from-buffer) :date)))
-    ;; add date property if missing
-    (when (not date-property)
-      (let ((date-string (o2jk--convert-timestamp-to-yyyy-dd-mm
-                          (format-time-string "%Y-%m-%d %H:%M"))))
-        (save-excursion
-          (with-current-buffer buffer
-            (goto-char (point-min))
-            (when (re-search-forward "^#\\+LAYOUT:" nil t)
-              (beginning-of-line))
-            (insert (format "#+DATE: %s\n" date-string))
-            (save-buffer)))))
-    (if (string-prefix-p (expand-file-name o2jk-source-directory)
-                         filepath)
-        (o2jk-publish-from-jekyll org-file)
-      (let* ((filename (file-name-nondirectory org-file))
-             (movefile (concat
-                        o2jk-source-directory "/"
-                        (plist-get (o2jk-get-options-from-buffer) :categories) "/"
-                        (format-time-string "%Y-%m-%d-") filename)))
-        (rename-file buffer-file-name movefile)
-        (switch-to-buffer (find-file-noselect movefile))
-        (o2jk-publish-from-jekyll movefile)))))
+    (if (not layout-property)
+        (o2jk-message "No '#+LAYOUT' property, publication skipped.")
+      (progn
+        ;; add date property if missing
+        (when (not date-property)
+          (let ((date-string (o2jk--convert-timestamp-to-yyyy-dd-mm
+                              (format-time-string "%Y-%m-%d %H:%M"))))
+            (save-excursion
+              (with-current-buffer buffer
+                (goto-char (point-min))
+                (when (re-search-forward "^#\\+LAYOUT:" nil t)
+                  (beginning-of-line))
+                (insert (format "#+DATE: %s\n" date-string))
+                (save-buffer)))))
+        (if (string-prefix-p (expand-file-name o2jk-source-directory)
+                             filepath)
+            (o2jk-publish-from-jekyll org-file)
+          (let* ((filename (file-name-nondirectory org-file))
+                 (movefile (concat
+                            o2jk-source-directory "/"
+                            (plist-get (o2jk-get-options-from-buffer) :categories) "/"
+                            (format-time-string "%Y-%m-%d-") filename)))
+            (rename-file buffer-file-name movefile)
+            (switch-to-buffer (find-file-noselect movefile))
+            (o2jk-publish-from-jekyll movefile)))))))
 
 (defvar o2jk-mode-map nil "Default Bindings map for o2jk mode.")
 
