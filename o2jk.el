@@ -656,14 +656,22 @@ Layout `'default`' is a page (depending on the user customs)."
          (org-file (buffer-file-name (current-buffer)))
          (filepath (file-name-directory org-file))
          (layout-property (plist-get (o2jk-get-options-from-buffer) :layout))
-         (date-property (plist-get (o2jk-get-options-from-buffer) :date)))
+         (date-property (plist-get (o2jk-get-options-from-buffer) :date))
+         ;; use regex search to get date from file name
+         (org-filename (buffer-name))
+         (date-from-filename
+          (when (string-match "\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\)" org-filename)
+            (match-string 1 org-filename))))
     (if (not layout-property)
         (o2jk-message "No '#+LAYOUT' property, publication skipped.")
       (progn
         ;; add date property if missing
         (when (not date-property)
-          (let ((date-string (o2jk--convert-timestamp-to-yyyy-dd-mm
-                              (format-time-string "%Y-%m-%d %H:%M"))))
+          (let ((date-string
+                 (if date-from-filename
+                     (setq date-property date-from-filename)
+                   (o2jk--convert-timestamp-to-yyyy-dd-mm
+                    (format-time-string "%Y-%m-%d %H:%M")))))
             (save-excursion
               (with-current-buffer buffer
                 (goto-char (point-min))
